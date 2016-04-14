@@ -2,153 +2,157 @@
 
 BEGIN {
 
-    db_file = ENVIRON["HOME"] "/Dropbox/mylinks/links.txt"
-    pager = "less -X --quit-if-one-screen"
+        db_file = ENVIRON["HOME"] "/Dropbox/mylinks/links.txt"
+        pager = "less -X --quit-if-one-screen"
 
-    RS = ""; FS = "\n"
+        RS = ""; FS = "\n"
 
-    switch (ARGV[1]) {
-    default:
-        printf "'%s': unknown command\n\n", ARGV[1]
-    case "":
-        print "Supported commands:"
-        print "  e, edit"
-        print "        open " db_file " in " get_editor()
-        print "  t, tags [<tag>...]"
-        print "        list all available tags or only specified tags"
-        print "  nt, notags"
-        print "        print records without tag(s)"
-        print "  c, count"
-        print "        print the number of records in " db_file
-        exit
-
-    case "e":
-    case "edit":
-        exit system(get_editor() " " db_file)
-
-    case "t":
-    case "tags":
-        if (ARGC == 2) {
-            command = "list_tags"
-            RS = "\n"; FS = " "
-            pager = "sort -u | nl -w5 -s': ' | " pager
-        } else {
-            command = "search_tags"
-            for (i = 2; i < ARGC; i++) {
-                str = tolower(ARGV[i])
-                if (str) {
-                    groups[++ngroups][1] = ""
-                    split(str, groups[ngroups], ", *")
-                }
-            }
-            if (!ngroups)
+        switch (ARGV[1]) {
+        default:
+                printf "'%s': unknown command\n\n", ARGV[1]
+        case "":
+                print "Supported commands:"
+                print "  e, edit"
+                print "        open " db_file " in " get_editor()
+                print "  t, tags [<tag>...]"
+                print "        list all available tags or only specified tags"
+                print "  nt, notags"
+                print "        print records without tag(s)"
+                print "  c, count"
+                print "        print the number of records in " db_file
                 exit
+
+        case "e":
+        case "edit":
+                exit system(get_editor() " " db_file)
+
+        case "t":
+        case "tags":
+                if (ARGC == 2) {
+                        command = "list_tags"
+                        RS = "\n"; FS = " "
+                        pager = "sort -u | nl -w5 -s': ' | " pager
+                } else {
+                        command = "search_tags"
+                        for (i = 2; i < ARGC; i++) {
+                                if (!(str = tolower(ARGV[i])))
+                                        continue
+                                groups[++ngroups][1] = ""
+                                split(str, groups[ngroups], ", *")
+                        }
+                        if (!ngroups)
+                                exit
+                }
+                break
+
+        case "c":
+        case "count":
+                command = "count"
+                break
+
+        case "nt":
+        case "notags":
+                command = "notags"
+                break
         }
-        break
 
-    case "c":
-    case "count":
-        command = "count"
-        break
-
-    case "nt":
-    case "notags":
-        command = "notags"
-        break
-    }
-
-    ARGV[1] = db_file
-    ARGC = 2
+        ARGV[1] = db_file
+        ARGC = 2
 }
 
 
 {
-    switch (command) {
-    case "list_tags":
-        if (sub(/^tag: */, "")) {
-            split($0, tags, ", *")
-            for (i in tags)
-                tagmap[trim(tags[i])]++
-        }
-        break
+        switch (command) {
+        case "list_tags":
+                if (sub(/^tag: */, "")) {
+                        split($0, tags, ", *")
+                        for (i in tags)
+                                tagmap[trim(tags[i])]++
+                }
+                break
 
-    case "notags":
-        for (i = 1; i <= NF; i++) {
-            if (match($i, /^tag:.*[[:graph:]]+/))
-                next
-        }
-        printf "%s\n\n", $0 | pager
-        break
+        case "notags":
+                for (i = 1; i <= NF; i++) {
+                        if (match($i, /^tag:.*[[:graph:]]+/))
+                                next
+                }
+                printf "%s\n\n", $0 | pager
+                break
 
-    case "search_tags":
-        delete all_tags
-        for (i = 1; i <= NF; i++) {
-            str = $i
-            if (!sub(/^tag: */, "", str))
-                continue
-            string_to_list(tolower(str), tags)
-            list_extend(all_tags, tags)
+        case "search_tags":
+                delete all_tags
+                for (i = 1; i <= NF; i++) {
+                        str = $i
+                        if (!sub(/^tag: */, "", str))
+                                continue
+                        string_to_list(tolower(str), tags)
+                        list_extend(all_tags, tags)
+                }
+                if (is_match(all_tags))
+                        printf "%s\n\n", $0 | pager
+                break
         }
-        if (is_match(all_tags))
-            printf "%s\n\n", $0 | pager
-        break
-    }
 
 }
 
 
 END {
-    switch(command) {
-    case "count":
-        print NR
-        break
+        switch(command) {
+        case "count":
+                print NR
+                break
 
-    case "list_tags":
-        for (tag in tagmap)
-            print tag, "("tagmap[tag]")" | pager
-        break
-    }
+        case "list_tags":
+                for (tag in tagmap)
+                        print tag, "("tagmap[tag]")" | pager
+                break
+        }
 }
 
 
 function get_editor()
 {
-    return ENVIRON["EDITOR"] ? ENVIRON["EDITOR"] : "/usr/bin/vim"
+        return ENVIRON["EDITOR"] ? ENVIRON["EDITOR"] : "/usr/bin/vim"
 }
+
 
 function trim(str,    s)
 {
-    s = str
-    gsub("^\\s+|\\s+$", "", s)
-    return s
+        s = str
+        gsub("^\\s+|\\s+$", "", s)
+        return s
 }
+
 
 function is_match(list,    i)
 {
-    for (i = 1; i <= ngroups; i++) {
-        if (find_tags(groups[i], list))
-            return 1
-    }
-    return 0
+        for (i = 1; i <= ngroups; i++) {
+                if (find_tags(groups[i], list))
+                        return 1
+        }
+        return 0
 }
+
 
 function find_tags(tags, list,    i, ntags)
 {
-    ntags = length(tags)
-    for (i = 1; i <= ntags && tags[i] in list; i++) {}
-    return i > ntags
+        ntags = length(tags)
+        for (i = 1; i <= ntags && tags[i] in list; i++) {}
+        return i > ntags
 }
+
 
 function string_to_list(s, l, sep,    x, a)
 {
-    split(s, a, sep ? sep : ", *")
-    delete l
-    for (x in a)
-        l[trim(a[x])]
+        split(s, a, sep ? sep : ", *")
+        delete l
+        for (x in a)
+                l[trim(a[x])]
 }
+
 
 function list_extend(d, s,    x)
 {
-    for (x in s)
-        d[x]
+        for (x in s)
+                d[x]
 }
