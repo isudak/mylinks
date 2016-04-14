@@ -134,9 +134,9 @@ function is_match(list,    i)
 
 function find_tags(tags, list,    i, ntags)
 {
-        ntags = length(tags)
-        for (i = 1; i <= ntags && tags[i] in list; i++) {}
-        return i > ntags
+    ntags = length(tags)
+    for (i = 1; i <= ntags && tags[i] in list; i++) {}
+    return i > ntags
 }
 
 function string_to_list(s, l, sep,    x, a)
@@ -147,22 +147,8 @@ function string_to_list(s, l, sep,    x, a)
         l[trim(a[x])]
 }
 
-function array_to_list(a, l,    x)
-{
-    delete l
-    for (x in a)
-        l[a[x]]
-}
-
 function list_extend(d, s,    x)
 {
     for (x in s)
         d[x]
-}
-
-function prn(a,  i)
-{
-    for (i in a) {
-        print i, ":", a[i]
-    }
 }
