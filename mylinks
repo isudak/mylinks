@@ -110,9 +110,13 @@ END {
 }
 
 
-function get_editor()
+function get_editor(    editors, i)
 {
-        return ENVIRON["EDITOR"] ? ENVIRON["EDITOR"] : "/usr/bin/vim"
+        editors[1] = ENVIRON["VISUAL"]
+        editors[2] = ENVIRON["EDITOR"]
+        editors[3] = "/usr/bin/vim"
+        while (!editors[++i]) {}
+        return editors[i]
 }
 
 
