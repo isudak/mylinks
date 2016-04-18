@@ -10,7 +10,8 @@ BEGIN {
         switch (ARGV[1]) {
         default:
                 printf "'%s': unknown command\n\n", ARGV[1]
-        case "":
+        case "h":
+        case "help":
                 print "Supported commands:"
                 print "  e, edit"
                 print "        open " db_file " in " get_editor()
@@ -20,6 +21,12 @@ BEGIN {
                 print "        print records without tag(s)"
                 print "  c, count"
                 print "        print the number of records in " db_file
+                print "  h, help"
+                print "        show this message"
+                exit
+
+        case "":
+                print db_file
                 exit
 
         case "e":
