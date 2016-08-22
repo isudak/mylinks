@@ -14,13 +14,14 @@ BEGIN {
         case "help":
                 print "Supported commands:"
                 print "  e, edit"
-                print "        open " db_file " in " get_editor()
-                print "  t, tags [<tag>...]"
-                print "        list all available tags or only specified tags"
+                print "        open '" db_file "' with '" get_editor() "'"
+                print "  t, tags [<tag>[,<tag>...]]..."
+                print "        list all available tags or records with specified tags"
+                print "        (',' = logical AND; ' ' = logical OR)"
                 print "  nt, notags"
                 print "        print records without tag(s)"
                 print "  c, count"
-                print "        print the number of records in " db_file
+                print "        print the number of records"
                 print "  h, help"
                 print "        show this message"
                 exit
